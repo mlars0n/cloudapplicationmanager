@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.3.xsd">
+
+    <!--Set up the main table to hold a domain (hosted zone in AWS) that will be a parent to subdomain records-->
+    <changeSet  id="0010"  author="mlarson">
+        <createTable  tableName="Domain">
+
+            <!--Primary key-->
+            <column  name="id"  type="int"  autoIncrement="true">
+                <constraints  primaryKey="true"  nullable="false"/>  
+            </column>
+
+            <!--Name of the host zone (will be the domain, basically)-->
+            <column  name="name"  type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <!--Zone ID (internal identifier) in AWS, needed for API calls-->
+            <column  name="zoneId"  type="varchar(100)">
+                <constraints  nullable="false"/>  
+            </column>
+        </createTable>  
+    </changeSet>
+
+</databaseChangeLog>

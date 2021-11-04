@@ -1,0 +1,59 @@
+plugins {
+	id 'org.springframework.boot' version '2.2.4.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+	id 'com.vaadin' version '0.14.5.1'
+}
+
+defaultTasks("clean", "build")
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.11'
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	developmentOnly
+	runtimeClasspath {
+		extendsFrom developmentOnly
+	}
+}
+
+dependencies {
+	implementation('com.vaadin:vaadin-spring-boot-starter') {
+//         Webjars are only needed when running in Vaadin 13 compatibility mode
+		["com.vaadin.webjar", "org.webjars.bowergithub.insites",
+		 "org.webjars.bowergithub.polymer", "org.webjars.bowergithub.polymerelements",
+		 "org.webjars.bowergithub.vaadin", "org.webjars.bowergithub.webcomponents"]
+				.forEach { group -> exclude(group: group) }
+	}
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	//implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.liquibase:liquibase-core:4.4.3'
+	implementation 'mysql:mysql-connector-java:8.0.25'
+	implementation platform('software.amazon.awssdk:bom:2.17.61')
+	implementation 'software.amazon.awssdk:route53'
+	//implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "com.vaadin:vaadin-bom:$vaadinVersion"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+vaadin {
+	pnpmEnable = false
+}

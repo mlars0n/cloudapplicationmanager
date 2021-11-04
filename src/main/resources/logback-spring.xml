@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!--Color pattern, nice when it works but doesn't work in all cases, so use the one below normally
+            <Pattern>
+                %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+            </Pattern>-->
+            <Pattern>
+                %d{ISO8601} %-5level [%t] %C{1.}: %msg%n%throwable
+            </Pattern>
+        </layout>
+    </appender>
+
+    <!-- LOG everything at INFO level by default-->
+    <root level="INFO">
+        <appender-ref ref="Console" />
+    </root>
+
+    <logger name="com.zaxxer.hikari.pool" level="INFO" additivity="false">
+        <appender-ref ref="Console" />
+    </logger>
+
+    <logger name="com.cloudapplicationmanager" level="debug" additivity="false">
+        <appender-ref ref="Console" />
+    </logger>
+
+</configuration>
