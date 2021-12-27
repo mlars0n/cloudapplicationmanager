@@ -4,11 +4,16 @@ package com.cloudapplicationmanager.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "Service")
+@NamedEntityGraph(name = "Service.environments",
+        attributeNodes = @NamedAttributeNode("environments")
+)
 public class Service {
 
     @Id
@@ -16,6 +21,9 @@ public class Service {
     private Long id;
 
     @Column(nullable = false, length = 200)
+    @NotNull(message = "Name cannot be null")
+    @NotEmpty(message = "Please supply a name for this service")
+    //@Size(min = 1)
     private String name;
 
     @Column(length = 500)
@@ -33,7 +41,7 @@ public class Service {
     @OneToMany(mappedBy="service")
     //@JsonManagedReference(value="service") //Required to avoid an infinite recursion serialization scenario
     @JsonIgnore
-    private List<SubDomain> subDomains = new ArrayList<>();
+    private List<Environment> environments = new ArrayList<Environment>();
 
     public Long getId() {
         return id;
@@ -83,12 +91,12 @@ public class Service {
         this.healthCheckPort = port;
     }
 
-    public List<SubDomain> getSubDomains() {
-        return subDomains;
+    public List<Environment> getEnvironments() {
+        return environments;
     }
 
-    public void setSubDomains(List<SubDomain> subDomains) {
-        this.subDomains = subDomains;
+    public void setEnvironments(List<Environment> subDomains) {
+        this.environments = subDomains;
     }
 
     @Override
@@ -99,7 +107,7 @@ public class Service {
                 ", healthCheckScheme='" + healthCheckScheme + '\'' +
                 ", healthCheckPort=" + healthCheckPort +
                 ", healthCheckPath='" + healthCheckPath + '\'' +
-                ", subDomains=" + subDomains +
+                ", subDomains=" + environments +
                 '}';
     }
 }

@@ -8,18 +8,17 @@
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.3.xsd">
 
-    <!-- Add two new columns to construct URL test paths  -->
-    <changeSet  id="0050"  author="mlarson">
+    <changeSet  id="0020"  author="mlarson">
         <createTable  tableName="Service">
 
             <!-- PK -->
             <column  name="id"  type="int"  autoIncrement="true">
-                <constraints  primaryKey="true"  nullable="false"/>
+                <constraints primaryKey="true"  nullable="false"/>
             </column>
 
             <!-- This will be the first part of the domain (the rest will be made up from the hosted zone) -->
             <column  name="name"  type="varchar(100)">
-                <constraints nullable="false"/>
+                <constraints unique="true" nullable="false"/>
             </column>
 
             <!-- The value of this record such as the IP address or CNAME reference -->
@@ -32,15 +31,6 @@
 
         </createTable>
 
-    </changeSet>
-
-    <changeSet  id="0055"  author="mlarson">
-
-        <insert tableName="Service">
-            <column  name="id"  value="1"/>
-            <column  name="name"  value="None"/>
-            <column  name="description"  value="No associated service"/>
-        </insert>
     </changeSet>
 
 </databaseChangeLog>

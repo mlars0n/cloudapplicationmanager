@@ -13,6 +13,13 @@ sourceCompatibility = '1.11'
 
 repositories {
 	mavenCentral()
+	//maven {
+	//	url "https://maven.vaadin.com/vaadin-addons"
+	//}
+
+	flatDir {
+		dirs 'ext-lib'
+	}
 }
 
 configurations {
@@ -21,6 +28,9 @@ configurations {
 		extendsFrom developmentOnly
 	}
 }
+
+//Handle log4j2 vulnerability
+ext['log4j2.version'] = '2.17.0'
 
 dependencies {
 	implementation('com.vaadin:vaadin-spring-boot-starter') {
@@ -32,8 +42,10 @@ dependencies {
 	}
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	//implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+	//implementation 'org.claspina:confirm-dialog:2.0.0'
+	implementation fileTree(dir: 'ext-lib', include: '*.jar')
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.liquibase:liquibase-core:4.4.3'
+	implementation 'org.liquibase:liquibase-core:4.6.1'
 	implementation 'mysql:mysql-connector-java:8.0.25'
 	implementation platform('software.amazon.awssdk:bom:2.17.61')
 	implementation 'software.amazon.awssdk:route53'

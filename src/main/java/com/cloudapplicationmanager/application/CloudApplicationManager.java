@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.util.Properties;
 @EnableJpaRepositories("com.cloudapplicationmanager.repository") //Adds the JPA repository interface classes
 @EntityScan("com.cloudapplicationmanager.model") //This is the package where the JPA entities live
 @EnableVaadin(value = "com.cloudapplicationmanager.view") //Where the Vaadin views live (have to specify this if they are not in this package)
+@EnableTransactionManagement
 public class CloudApplicationManager {
 
 	private static Logger logger = LoggerFactory.getLogger(CloudApplicationManager.class);

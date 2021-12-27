@@ -19,14 +19,21 @@
 
             <!--Name of the host zone (will be the domain, basically)-->
             <column  name="name"  type="varchar(100)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
 
-            <!--Zone ID (internal identifier) in AWS, needed for API calls-->
-            <column  name="zoneId"  type="varchar(100)">
+            <!--Zone ID (cloud identifier) on the cloud service side, typically needed for API calls-->
+            <column  name="cloudId"  type="varchar(100)">
                 <constraints  nullable="false"/>  
             </column>
-        </createTable>  
+        </createTable>
+
+        <!-- Add a "none" column to in cases where there is no domain (yet) -->
+        <insert tableName="Domain">
+            <!--<column  name="id"  value="address value"/>-->
+            <column  name="name"  value="none"/>
+            <column name="cloudId" value="n/a"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

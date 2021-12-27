@@ -31,7 +31,7 @@ public class MainView extends AppLayout {
         addToNavbar(new DrawerToggle(), new Span("Cloud Application Manager"));
 
         Tab homeTab = new Tab(new RouterLink("Home", MainView.class));
-        Tab servicesTab = new Tab(new RouterLink("Edit Services", ServiceListView.class));
+        Tab servicesTab = new Tab(new RouterLink("Services", ServiceListView.class));
         Tab domainsTab = new Tab(new RouterLink("Domains", DomainsView.class));
         Tabs tabs = new Tabs(homeTab, servicesTab, domainsTab);
         tabs.setOrientation(Tabs.Orientation.VERTICAL);

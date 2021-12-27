@@ -99,7 +99,7 @@ public class AwsRoute53Service {
         }
 
         //Domain found, OK to continue
-        logger.debug("Found Domain entry for [{}] with hosted zone ID of [{}]", zoneDomain.getName(), zoneDomain.getZoneId());
+        logger.debug("Found Domain entry for [{}] with hosted zone ID of [{}]", zoneDomain.getName(), zoneDomain.getCloudId());
 
         //TODO add type in here to handle which type of LB this is (see https://docs.aws.amazon.com/general/latest/gr/elb.html)
         AliasTarget aliasTarget = AliasTarget.builder()
@@ -117,7 +117,7 @@ public class AwsRoute53Service {
         //Execute the actual change and capture any SDK exceptions
         //The AWS SDK has exceptions but they all descend from RuntimeException and I don't want to depend on the specific exceptions
         try {
-            boolean success = executeRoute53Change(resourceRecordSet, zoneDomain.getZoneId());
+            boolean success = executeRoute53Change(resourceRecordSet, zoneDomain.getCloudId());
         } catch (RuntimeException e) {
             logger.warn("Exception executing alias update: ", e);
             serviceResponse.setSuccess(false);

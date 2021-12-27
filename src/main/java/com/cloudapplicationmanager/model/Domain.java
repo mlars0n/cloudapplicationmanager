@@ -19,11 +19,11 @@ public class Domain {
     private String name;
 
     @Column(length=100)
-    private String zoneId;
+    private String cloudId;
 
     @OneToMany(mappedBy="domain")
-    @JsonManagedReference(value = "subdomains") //Required to avoid an infinite recursion serialization scenario
-    private List<SubDomain> subDomains = new ArrayList<>();
+    @JsonManagedReference(value = "environments") //Required to avoid an infinite recursion serialization scenario
+    private List<Environment> environments = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -37,16 +37,16 @@ public class Domain {
         this.name = name;
     }
 
-    public void setZoneId(String zoneId) {
-        this.zoneId = zoneId;
+    public void setCloudId(String zoneId) {
+        this.cloudId = zoneId;
     }
 
-    public List<SubDomain> getSubDomains() {
-        return subDomains;
+    public List<Environment> getEnvironments() {
+        return environments;
     }
 
-    public void setSubDomains(List<SubDomain> subDomains) {
-        this.subDomains = subDomains;
+    public void setEnvironments(List<Environment> subDomains) {
+        this.environments = subDomains;
     }
 
     //THe name of the hosted zone, i.e. the domain
@@ -54,7 +54,7 @@ public class Domain {
         return name;
     }
 
-    public String getZoneId() {
-        return zoneId;
+    public String getCloudId() {
+        return cloudId;
     }
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.3.xsd">
+
+    <!-- This table holds the environments for a service  -->
+    <changeSet  id="0030"  author="mlarson">
+        <createTable  tableName="Environment">
+
+            <!-- PK -->
+            <column  name="id"  type="int"  autoIncrement="true">
+                <constraints  primaryKey="true"  nullable="false"/>
+            </column>
+
+            <!-- The name of the environment -->
+            <column  name="name"  type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Any notes or description about this environment -->
+            <column  name="description"  type="varchar(500)"/>
+
+            <!-- The value of this record such as the IP address or CNAME reference -->
+            <column  name="subdomain"  type="varchar(100)"/>
+            <column  name="urlPath"  type="varchar(100)"/>
+
+            <!-- Whether to do the health check or not -->
+            <column name="healthCheckActive" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Pointer to the parent domain that it's part of -->
+            <column name="domainId" type="int">
+                <constraints nullable="false" foreignKeyName="fk_env_domain" references="Domain(id)"/>
+            </column>
+
+            <!-- Pointer to the parent Service that it's part of -->
+            <column name="serviceId" type="int">
+                <constraints nullable="false" foreignKeyName="fk_env_service" references="Service(id)"/>
+            </column>
+
+        </createTable>
+
+        <addUniqueConstraint  columnNames="name, serviceId"
+                              constraintName="environment_name_service_uniq"
+                              tableName="Environment"/>
+
+    </changeSet>
+
+</databaseChangeLog>
