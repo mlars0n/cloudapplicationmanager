@@ -6,6 +6,7 @@ import com.cloudapplicationmanager.model.Service;
 import com.cloudapplicationmanager.repository.DomainRepository;
 import com.cloudapplicationmanager.repository.EnvironmentRepository;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,7 @@ public class EnvironmentForm extends FormLayout {
     H3 formTitle = new H3("New Environment");
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
+    Button delete = new Button("Delete");
 
     // The parent dialog of this form. Ideally this class wouldn't need that but it has to know how to close itself
     Dialog dialog;
@@ -62,6 +65,11 @@ public class EnvironmentForm extends FormLayout {
     //The service this environment will be part of
     private Service service;
 
+
+
+    //The environment ID -- a value of 0 will mean a new environment will be created, otherwise we'll be populating the environment object
+    private long environmentId = 0;
+
     /**
      * Constructor for creating a new environment form
      * @param environmentRepository
@@ -69,7 +77,7 @@ public class EnvironmentForm extends FormLayout {
      * @param dialog
      */
     public EnvironmentForm(EnvironmentRepository environmentRepository, DomainRepository domainRepository, Service service, Dialog dialog, ServiceView serviceView) {
-        this(environmentRepository, domainRepository, service, serviceView, dialog, 0);
+        this(environmentRepository, domainRepository, service, serviceView, dialog);
     }
 
     /**
@@ -77,29 +85,14 @@ public class EnvironmentForm extends FormLayout {
      * @param environmentRepository
      * @param domainRepository
      * @param dialog
-     * @param environmentId
      */
     public EnvironmentForm(EnvironmentRepository environmentRepository, DomainRepository domainRepository, Service service,
-                           ServiceView serviceView, Dialog dialog, long environmentId) {
+                           ServiceView serviceView, Dialog dialog) {
         this.environmentRepository = environmentRepository;
         this.domainRepository= domainRepository;
         this.service = service;
         this.serviceView = serviceView;
         this.dialog = dialog;
-
-        //Look up the environment if needed or create a blank one if needed
-        if (environmentId == 0) {
-            environment = new Environment();
-        } else {
-            Optional<Environment> environmentOption = environmentRepository.findById(environmentId);
-
-            if (environmentOption.isPresent()) {
-                environment = environmentOption.get();
-            } else {
-                //TODO This error would be unexpected, but should be handled in a user-friendly way
-                logger.error("Could not find environment with id [{}]", environmentId);
-            }
-        }
 
         configureForm();
     }
@@ -113,9 +106,9 @@ public class EnvironmentForm extends FormLayout {
         domain.setItems(domainRepository.findAll());
         domain.setValue(domainRepository.findById(1l).get());
 
-        //Set up bindings
+        //Set up bindings --
         binder.bindInstanceFields(this);
-        binder.setBean(environment);
+        //binder.setBean(environment);
 
         //Construct the rest of the form
         createEnvironmentForm();
@@ -130,8 +123,11 @@ public class EnvironmentForm extends FormLayout {
         //Make sure this checkbox is on its own line
         //this.setColspan(healthCheckActive, 2);
 
+        HorizontalLayout buttons = createButtons();
+        this.setColspan(buttons, 2);
+
         //Add all the components
-        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domain, createButtons());
+        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domain, buttons);
     }
 
     private HorizontalLayout createButtons() {
@@ -151,10 +147,7 @@ public class EnvironmentForm extends FormLayout {
                 environmentRepository.save(environment);
 
                 //Update the calling page
-                addListener(EnvironmentSaveEvent.class, e -> logger.debug("Environment save event fired IN ENV CLASS"));
                 fireEvent(new EnvironmentSaveEvent(this, false));
-
-                serviceView.updateService();
 
                 //Close the dialog and update the items in the list
                 dialog.close();
@@ -168,17 +161,48 @@ public class EnvironmentForm extends FormLayout {
 
         cancel.addClickListener(event -> {
             binder.readBean(null);
-
             dialog.close();
         });
 
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.add(save, cancel);
         save.getStyle().set("marginRight", "10px");
         save.getStyle().set("marginTop", "15px");
         cancel.getStyle().set("marginTop", "15px");
+        delete.getStyle().set("marginTop", "15px");
+        delete.getStyle().set("margin-left", "auto");
+
+        HorizontalLayout actions = new HorizontalLayout();
+        actions.add(save, cancel, delete);
+
 
         return actions;
+    }
+
+    /**
+     * Method to call in order to populate the environment at run time when asked for by the UI
+     *
+     * @param environmentId
+     */
+    public void populateEnvironment(long environmentId) {
+        this.environmentId = environmentId;
+
+        logger.debug("Populating environment for environment ID [{}]", environmentId);
+
+        //Look up the environment if needed or create a blank one if needed
+        if (environmentId == 0) {
+            environment = new Environment();
+        } else {
+            Optional<Environment> environmentOption = environmentRepository.findById(environmentId);
+
+            if (environmentOption.isPresent()) {
+                environment = environmentOption.get();
+            } else {
+                //TODO This error would be unexpected, but should be handled in a user-friendly way
+                logger.error("Could not find environment with id [{}]", environmentId);
+            }
+        }
+
+        //Set this environment into the binder so it gets the right values
+        binder.setBean(environment);
     }
 
     public static class EnvironmentSaveEvent extends ComponentEvent<EnvironmentForm> {
@@ -186,5 +210,19 @@ public class EnvironmentForm extends FormLayout {
             super(source, fromClient);
         }
     }
+
+    /**
+     * This method is necessary to have the listener work from the parent class (taken from this example:
+     * https://github.com/vaadin/flow-crm-tutorial/blob/main/src/main/java/com/example/application/views/list/ContactForm.java)
+     * @param eventType
+     * @param listener
+     * @param <T>
+     * @return
+     */
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType, ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
+    }
+
+
 }
 

@@ -13,7 +13,7 @@ public class Environment {
     private Long id;
 
     @Column(nullable = false, length = 200)
-    @NotEmpty
+    @NotEmpty(message = "Please supply a name for this environment")
     private String name;
 
     @Column(length = 500)

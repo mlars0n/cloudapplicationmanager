@@ -24,15 +24,11 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Route(value = "service", layout = MainView.class)
@@ -52,6 +48,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
     //Main Service class, will either be populated if editing or not if new
     private Service service;
+    private long serviceId;
     private final ServiceRepository serviceRepository;
     private final EnvironmentRepository environmentRepository;
     private final DomainRepository domainRepository;
@@ -80,23 +77,10 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     @Override
     public void setParameter(BeforeEvent event, Long serviceId) {
 
-        //If the parameter is 0 then create a new service
-        if (serviceId == 0) {
-            service = new Service();
-            isNew = true;
-        } else {
-            logger.debug("Getting service with ID [{}] to edit", serviceId);
+        this.serviceId = serviceId;
 
-            Optional<Service> optionalService = serviceRepository.findServiceById(serviceId);
-            if (optionalService.isPresent()) {
-                this.service = optionalService.get();
-                logger.debug("Service name is: [{}]", service.getName());
-            } else {
-                //TODO handle this error gracefully (although don't expect this, as the links
-                //will be calculated properly in the app)
-                logger.error("Could not find Service with ID [{}]", serviceId);
-            }
-        }
+        //Populate the service object
+        populateServiceData();
 
         //Now that we have the correct parameter, call the code that will create this page
         createPage();
@@ -136,7 +120,36 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //this.addListener()
     }
 
-    @Transactional
+    private void populateServiceData() {
+        //If the parameter is 0 then create a new service
+        if (serviceId == 0) {
+            service = new Service();
+            isNew = true;
+        } else {
+            logger.debug("Getting service with ID [{}]", serviceId);
+
+            Optional<Service> optionalService = serviceRepository.findServiceById(serviceId);
+            if (optionalService.isPresent()) {
+                this.service = optionalService.get();
+                logger.debug("Service name is: [{}]", service.getName());
+            } else {
+                //TODO handle this error gracefully (although don't expect this, as the links
+                //will be calculated properly in the app)
+                logger.error("Could not find Service with ID [{}]", serviceId);
+            }
+        }
+
+        //Populate or refresh the environment grid
+        environmentGrid.setItems(service.getEnvironments());
+    }
+
+    private void refreshEnvironmentList(EnvironmentForm.EnvironmentSaveEvent event) {
+        logger.debug("Environment save event fired IN SERVICE VIEW class, refreshing list");
+
+        //TODO could refresh this in a more direct way but this will be a quick query, i.e. lookup by PK with eager fetch of environments
+        this.populateServiceData();
+    }
+
     VerticalLayout createEnvironmentLayout() {
         VerticalLayout environmentVerticalLayout = new VerticalLayout();
 
@@ -149,22 +162,23 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Create the grid
         environmentGrid.addClassNames("contact-grid");
         environmentGrid.setSizeFull();
-        environmentGrid.setColumns("name");
+        environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
         environmentGrid.getColumns().forEach(col -> col.setAutoWidth(true));
         setSizeFull();
         //environmentGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
         //Get the environments
-        List<Environment> environments = new ArrayList<>();
+        //List<Environment> environments = new ArrayList<>();
         environmentGrid.setItems(service.getEnvironments());
         environmentGrid.setSizeFull();
+
         //environmentGrid.setItems(environmentRepository.findAll());
 
         //this.setColspan(environmentGrid, 3);
 
         //Create the dialog and add the environment form to it
         Dialog dialog = new Dialog();
-        EnvironmentForm environmentForm = new EnvironmentForm(environmentRepository, domainRepository, service, this, dialog, 0);
+        EnvironmentForm environmentForm = new EnvironmentForm(environmentRepository, domainRepository, service, this, dialog);
         dialog.add(environmentForm);
 
         gridAndEnvironmentFormLayout.add(environmentGrid);
@@ -172,14 +186,33 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         gridAndEnvironmentFormLayout.setFlexGrow(1, environmentForm);*/
         gridAndEnvironmentFormLayout.setSizeFull();
 
+        //Add the event listener that fires when an environment is saved
+        environmentForm.addListener(EnvironmentForm.EnvironmentSaveEvent.class, this::refreshEnvironmentList);
+
         //addEnvironmentButton.addClickListener(event -> environmentForm.setVisible(true));
-        addEnvironmentButton.addClickListener(event -> dialog.open());
+        addEnvironmentButton.addClickListener(event -> {
+
+            //Set the environment ID to 0 for a new environment
+            environmentForm.populateEnvironment(0);
+            dialog.open();
+        });
+
+        environmentGrid.asSingleSelect().addValueChangeListener(event -> {
+
+            logger.debug("Row clicked for environment [{}]", event.getValue().getName());
+
+            environmentForm.populateEnvironment(event.getValue().getId());
+            dialog.open();
+
+        });
 
         environmentVerticalLayout.add(gridAndEnvironmentFormLayout, dialog);
         environmentVerticalLayout.setSizeFull();
 
         return environmentVerticalLayout;
     }
+
+
 
     private HorizontalLayout createButtons(Binder binder) {
 
@@ -226,28 +259,6 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
     Registration addChangeListener(ComponentEventListener<EnvironmentForm.EnvironmentSaveEvent> listener) {
         return getEventBus().addListener(EnvironmentForm.EnvironmentSaveEvent.class, listener);
-    }
-
-    void updateService() {
-        //If the parameter is 0 then create a new service
-        if (service.getId() == 0) {
-            service = new Service();
-            isNew = true;
-        } else {
-            logger.debug("Getting service with ID [{}] to edit", service.getId());
-
-            Optional<Service> optionalService = serviceRepository.findServiceById(service.getId());
-            if (optionalService.isPresent()) {
-                this.service = optionalService.get();
-                logger.debug("Service name is: [{}]", service.getName());
-            } else {
-                //TODO handle this error gracefully (although don't expect this, as the links
-                //will be calculated properly in the app)
-                logger.error("Could not find Service with ID [{}]", service.getId());
-            }
-        }
-
-        environmentGrid.setItems(service.getEnvironments());
     }
 }
 
