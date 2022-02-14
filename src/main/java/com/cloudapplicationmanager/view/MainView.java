@@ -32,7 +32,7 @@ public class MainView extends AppLayout {
 
         Tab homeTab = new Tab(new RouterLink("Home", MainView.class));
         Tab servicesTab = new Tab(new RouterLink("Services", ServiceListView.class));
-        Tab domainsTab = new Tab(new RouterLink("Domains", DomainsView.class));
+        Tab domainsTab = new Tab(new RouterLink("Domains", DomainListView.class));
         Tabs tabs = new Tabs(homeTab, servicesTab, domainsTab);
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         addToDrawer(tabs);

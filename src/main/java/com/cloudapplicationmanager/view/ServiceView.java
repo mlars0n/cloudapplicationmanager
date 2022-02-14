@@ -55,7 +55,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     private boolean isNew = false;
 
     //Environment grid
-    private Grid<Environment> environmentGrid = new Grid(Environment.class);
+    private Grid<Environment> environmentGrid = new Grid();
 
     //EnvironmentForm to be used in the popup dialogues
     //private EnvironmentForm environmentForm;
@@ -150,21 +150,25 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         this.populateServiceData();
     }
 
-    VerticalLayout createEnvironmentLayout() {
-        VerticalLayout environmentVerticalLayout = new VerticalLayout();
+    private String getFullyQualifiedUrl(Environment environment) {
+        return environment.getService().getHealthCheckScheme() + "://" + environment.getSubDomain() + "." + environment.getDomain().getName();
+    }
 
-        Button addEnvironmentButton = new Button("Add Environment");
-        environmentVerticalLayout.add(addEnvironmentButton);
+    VerticalLayout createEnvironmentLayout() {
+
+        //Set up the basic layout
+        VerticalLayout environmentVerticalLayout = new VerticalLayout();
 
         //Add the horizontal layout
         HorizontalLayout gridAndEnvironmentFormLayout = new HorizontalLayout();
 
-        //Create the grid
-        environmentGrid.addClassNames("contact-grid");
-        environmentGrid.setSizeFull();
-        environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
+        //Create the grid columns
+        environmentGrid.addColumn(Environment::getName).setHeader("Name").setSortable(true);
+        environmentGrid.addColumn(environment -> getFullyQualifiedUrl(environment)).setHeader("Fully qualified URL");
+
+        //environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
         environmentGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        setSizeFull();
+
         //environmentGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
         //Get the environments
@@ -189,7 +193,8 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Add the event listener that fires when an environment is saved
         environmentForm.addListener(EnvironmentForm.EnvironmentSaveEvent.class, this::refreshEnvironmentList);
 
-        //addEnvironmentButton.addClickListener(event -> environmentForm.setVisible(true));
+        //Create the "add environment" button and what to do when it is clicked
+        Button addEnvironmentButton = new Button("Add Environment");
         addEnvironmentButton.addClickListener(event -> {
 
             //Set the environment ID to 0 for a new environment
@@ -197,22 +202,31 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
             dialog.open();
         });
 
+        //What happens when you click on a row
         environmentGrid.asSingleSelect().addValueChangeListener(event -> {
 
-            logger.debug("Row clicked for environment [{}]", event.getValue().getName());
+            //This has to be checked for null because for some reason this gets called
+            if (event != null && event.getValue() != null) {
+                logger.debug("Row clicked for environment [{}]", event.getValue().getName());
 
-            environmentForm.populateEnvironment(event.getValue().getId());
+                environmentForm.populateEnvironment(event.getValue().getId());
+            }
+
             dialog.open();
 
         });
 
-        environmentVerticalLayout.add(gridAndEnvironmentFormLayout, dialog);
+        //Set the high level grid properties
+        environmentGrid.addClassNames("contact-grid");
+        environmentGrid.setSizeFull();
+        setSizeFull();
+
+        //Add the components to the environment layout
+        environmentVerticalLayout.add(addEnvironmentButton, gridAndEnvironmentFormLayout, dialog);
         environmentVerticalLayout.setSizeFull();
 
         return environmentVerticalLayout;
     }
-
-
 
     private HorizontalLayout createButtons(Binder binder) {
 

@@ -4,6 +4,7 @@ package com.cloudapplicationmanager.model;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,10 +17,14 @@ public class Domain {
     private Long id;
 
     @Column(nullable = false, length = 200)
+    @NotEmpty(message = "Please supply a domain name")
     private String name;
 
     @Column(length=100)
     private String cloudId;
+
+    @Column(length = 500)
+    private String description;
 
     @OneToMany(mappedBy="domain")
     @JsonManagedReference(value = "environments") //Required to avoid an infinite recursion serialization scenario
@@ -39,6 +44,14 @@ public class Domain {
 
     public void setCloudId(String zoneId) {
         this.cloudId = zoneId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Environment> getEnvironments() {

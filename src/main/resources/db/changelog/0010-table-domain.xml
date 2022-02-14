@@ -22,16 +22,24 @@
                 <constraints nullable="false" unique="true"/>
             </column>
 
-            <!--Zone ID (cloud identifier) on the cloud service side, typically needed for API calls-->
+            <!-- Any notes or description about this domain -->
+            <column  name="description"  type="varchar(500)">
+                <constraints  nullable="true"/><!--Not a required field, optional-->
+            </column>
+
+            <!--Zone ID (cloud identifier) on the cloud service side, typically needed for API calls.
+            Make this nullable as it is not required for basic functionality but will be very useful for
+            automated introspection of DNS-->
             <column  name="cloudId"  type="varchar(100)">
-                <constraints  nullable="false"/>  
+                <constraints  nullable="true"/>
             </column>
         </createTable>
 
         <!-- Add a "none" column to in cases where there is no domain (yet) -->
         <insert tableName="Domain">
             <!--<column  name="id"  value="address value"/>-->
-            <column  name="name"  value="none"/>
+            <column  name="name"  value="None"/>
+            <column  name="description"  value="Placeholder value to allow environment creation before domains are defined"/>
             <column name="cloudId" value="n/a"/>
         </insert>
     </changeSet>

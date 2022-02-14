@@ -11,8 +11,19 @@ import java.util.List;
 
 @Entity
 @Table(name = "Service")
-@NamedEntityGraph(name = "Service.environments",
-        attributeNodes = @NamedAttributeNode("environments")
+@NamedEntityGraph(
+        name = "Service.environments",
+        attributeNodes = {
+            @NamedAttributeNode(value = "environments", subgraph = "domain-subgraph"),
+        },
+        subgraphs = { //Grab the domains for the environments any time you get the service/environments
+                @NamedSubgraph(
+                        name = "domain-subgraph",
+                        attributeNodes = {
+                                @NamedAttributeNode("domain")
+                        }
+                )
+        }
 )
 public class Service {
 
