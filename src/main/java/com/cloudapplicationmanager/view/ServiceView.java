@@ -113,7 +113,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         formLayout.add(name, description, healthCheckScheme, healthCheckPort, healthCheckPath);
         add(formLayout, br, createButtons(binder), br, elementsHeader, createEnvironmentLayout());
 
-        this.addListener(EnvironmentForm.EnvironmentSaveEvent.class, e -> logger.debug("Environment save event fired"));
+        this.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, e -> logger.debug("Environment save event fired"));
 
         //Registration registration = this.addChangeListener(e -> logger.debug("Environment save event fired"));
 
@@ -143,7 +143,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         environmentGrid.setItems(service.getEnvironments());
     }
 
-    private void refreshEnvironmentList(EnvironmentForm.EnvironmentSaveEvent event) {
+    private void refreshEnvironmentList(EnvironmentForm.EnvironmentUpdateEvent event) {
         logger.debug("Environment save event fired IN SERVICE VIEW class, refreshing list");
 
         //TODO could refresh this in a more direct way but this will be a quick query, i.e. lookup by PK with eager fetch of environments
@@ -191,7 +191,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         gridAndEnvironmentFormLayout.setSizeFull();
 
         //Add the event listener that fires when an environment is saved
-        environmentForm.addListener(EnvironmentForm.EnvironmentSaveEvent.class, this::refreshEnvironmentList);
+        environmentForm.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, this::refreshEnvironmentList);
 
         //Create the "add environment" button and what to do when it is clicked
         Button addEnvironmentButton = new Button("Add Environment");
@@ -205,7 +205,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //What happens when you click on a row
         environmentGrid.asSingleSelect().addValueChangeListener(event -> {
 
-            //This has to be checked for null because for some reason this gets called
+            //This has to be checked for null
             if (event != null && event.getValue() != null) {
                 logger.debug("Row clicked for environment [{}]", event.getValue().getName());
 
@@ -271,8 +271,8 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         return actions;
     }
 
-    Registration addChangeListener(ComponentEventListener<EnvironmentForm.EnvironmentSaveEvent> listener) {
-        return getEventBus().addListener(EnvironmentForm.EnvironmentSaveEvent.class, listener);
+    Registration addChangeListener(ComponentEventListener<EnvironmentForm.EnvironmentUpdateEvent> listener) {
+        return getEventBus().addListener(EnvironmentForm.EnvironmentUpdateEvent.class, listener);
     }
 }
 

@@ -12,12 +12,16 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
+import org.claspina.confirmdialog.ButtonOption;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +48,7 @@ public class EnvironmentForm extends FormLayout {
     H3 formTitle = new H3("New Environment");
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
-    Button delete = new Button("Delete");
+    Button delete = new Button(new Icon(VaadinIcon.TRASH));
 
     // The parent dialog of this form. Ideally this class wouldn't need that but it has to know how to close itself
     Dialog dialog;
@@ -147,7 +151,7 @@ public class EnvironmentForm extends FormLayout {
                 environmentRepository.save(environment);
 
                 //Update the calling page
-                fireEvent(new EnvironmentSaveEvent(this, false));
+                fireEvent(new EnvironmentUpdateEvent(this, false));
 
                 //Close the dialog and update the items in the list
                 dialog.close();
@@ -159,8 +163,31 @@ public class EnvironmentForm extends FormLayout {
             }
         });
 
+        //Cancel button
         cancel.addClickListener(event -> {
             binder.readBean(null);
+            dialog.close();
+        });
+
+        //Environment delete button
+        delete.addClickListener(event -> {
+
+            ConfirmDialog
+                    .createQuestion()
+                    .withCaption("Delete warning")
+                    .withMessage("Are you sure you want to delete environment  \"" + environment.getName() + "\"?")
+                    .withOkButton(() -> {
+                        environmentRepository.delete(environment);
+
+                        //Update the calling page
+                        fireEvent(new EnvironmentUpdateEvent(this, false));
+                    }, ButtonOption.focus(), ButtonOption.caption("YES"))
+                    .withCancelButton(ButtonOption.caption("NO"))
+                    .open();
+
+            //Update the calling page with the new list
+            fireEvent(new EnvironmentUpdateEvent(this, false));
+
             dialog.close();
         });
 
@@ -205,8 +232,8 @@ public class EnvironmentForm extends FormLayout {
         binder.setBean(environment);
     }
 
-    public static class EnvironmentSaveEvent extends ComponentEvent<EnvironmentForm> {
-        public EnvironmentSaveEvent(EnvironmentForm source, boolean fromClient) {
+    public static class EnvironmentUpdateEvent extends ComponentEvent<EnvironmentForm> {
+        public EnvironmentUpdateEvent(EnvironmentForm source, boolean fromClient) {
             super(source, fromClient);
         }
     }
