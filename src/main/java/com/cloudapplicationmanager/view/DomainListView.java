@@ -16,12 +16,14 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import dev.mett.vaadin.tooltip.Tooltips;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+//Tooltip import comes from https://vaadin.com/directory/component/tooltips4vaadin/samples
+import dev.mett.vaadin.tooltip.Tooltips;
 
 @Route(value = "domains", layout = MainView.class)
 @PageTitle("Domains")
@@ -38,12 +40,22 @@ public class DomainListView extends VerticalLayout {
     //Domain object to be used for creating new domains or editing them
     private Domain domain;
 
-    //Fields to be managed by the binder framework
+    //Fields to be managed by the binder framework (note that names much match in order to work
+    //in the bean binding framework
     private final TextField name = new TextField("Domain Name");
     private final TextField description = new TextField("Description");
 
     //Dialog to add or edit a domain
     Dialog addEditEnvironmentDialog = new Dialog();
+
+    //Buttons used in the popup domain dialog--need to be set up here so
+    //we can adjust the tooltip message in the event handler
+    Button domainPopupSaveButton = new Button("Save");
+    Button domainPopupCancelButton = new Button("Cancel");
+    Button domainPopupDeleteButton = new Button(new Icon(VaadinIcon.TRASH));
+
+    //How many environments exist for a particular domain
+    int totalEnvironmentsForDomain = 0;
 
     public DomainListView(@Autowired DomainRepository domainRepository) {
 
@@ -78,19 +90,15 @@ public class DomainListView extends VerticalLayout {
 
     private FormLayout createDomainForm() {
         FormLayout domainForm = new FormLayout();
-        domainForm.add(this.name, this.description, createButtons());
+        domainForm.add(this.name, this.description, configureDomainPopupButtons());
 
         return domainForm;
     }
 
-    private HorizontalLayout createButtons() {
-
-        Button save = new Button("Save");
-        Button cancel = new Button("Cancel");
-        Button delete = new Button(new Icon(VaadinIcon.TRASH));
+    private HorizontalLayout configureDomainPopupButtons() {
 
         //Buttons
-        save.addClickListener(event -> {
+        domainPopupSaveButton.addClickListener(event -> {
             try {
 
                 logger.debug("Saving domain [{}]", domain.getName());
@@ -114,16 +122,14 @@ public class DomainListView extends VerticalLayout {
             }
         });
 
-        cancel.addClickListener(event -> {
+        domainPopupCancelButton.addClickListener(event -> {
             addEditEnvironmentDialog.close();
         });
 
-        //Check to see if delete is possible, if so allow it
-        if (domain != null && domain.getEnvironments().size() > 0) {
-            Tooltips.getCurrent().setTooltip(delete, "Delete disabled. To delete first remove all environments that use this domain.");
-        } else {
-            delete.addClickListener(event -> {
+        //Delete functionality
+        domainPopupDeleteButton.addClickListener(event -> {
 
+            if (totalEnvironmentsForDomain == 0) {
                 ConfirmDialog
                         .createQuestion()
                         .withCaption("Delete warning")
@@ -140,17 +146,17 @@ public class DomainListView extends VerticalLayout {
                         .open();
 
                 addEditEnvironmentDialog.close();
-            });
-        }
+            } //Else do nothing, if we can't actually process the deletion
+        });
 
-        save.getStyle().set("marginRight", "10px");
-        save.getStyle().set("marginTop", "15px");
-        cancel.getStyle().set("marginTop", "15px");
-        delete.getStyle().set("marginTop", "15px");
-        delete.getStyle().set("margin-left", "auto");
+        domainPopupSaveButton.getStyle().set("marginRight", "10px");
+        domainPopupSaveButton.getStyle().set("marginTop", "15px");
+        domainPopupCancelButton.getStyle().set("marginTop", "15px");
+        domainPopupDeleteButton.getStyle().set("marginTop", "15px");
+        domainPopupDeleteButton.getStyle().set("margin-left", "auto");
 
         HorizontalLayout actions = new HorizontalLayout();
-        actions.add(save, cancel, delete);
+        actions.add(domainPopupSaveButton, domainPopupCancelButton, domainPopupDeleteButton);
 
 
         return actions;
@@ -182,11 +188,25 @@ public class DomainListView extends VerticalLayout {
 
             editRowButton.addClickListener(event -> {
 
+                totalEnvironmentsForDomain = 0;
+
                 //Bind the form and bean
                 binder.bindInstanceFields(this);
                 domain = localDomain; //Set the page's domain to this one that we are editing
                 binder.setBean(domain);
-                logger.debug("Envs: [{}]", domainRepository.getEnvironmentsCount(domain));
+
+                //Get how many environments exist for this domain
+                totalEnvironmentsForDomain = domainRepository.getEnvironmentsCount(domain);
+                logger.debug("Domain [{}] has [{}] environments", domain.getName(), totalEnvironmentsForDomain);
+
+                //Set the tooltip if there are more environments than can be deleted (deletion will be disallowed)
+                if (totalEnvironmentsForDomain > 0) {
+                    Tooltips.getCurrent().setTooltip(domainPopupDeleteButton, "Delete not allowed because there are " + totalEnvironmentsForDomain
+                            + " environment(s) using this domain. To delete remove all environments that use this domain.");
+                    logger.debug("Disallowing domain deletion because there are [{}] environments still using this domain.", totalEnvironmentsForDomain);
+                } else { //Remove the tooltip if deletion is allowed
+                    Tooltips.getCurrent().removeTooltip(domainPopupDeleteButton);
+                }
 
                 addEditEnvironmentDialog.open();
             });

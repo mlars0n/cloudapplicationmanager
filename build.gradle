@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.8'
+	id 'org.springframework.boot' version '2.6.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'com.vaadin' version '0.14.5.1'
@@ -9,13 +9,14 @@ defaultTasks("clean", "build")
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.11'
+sourceCompatibility = '1.8'
 
 repositories {
 	mavenCentral()
-	//maven {
-	//	url "https://maven.vaadin.com/vaadin-addons"
-	//}
+
+	maven {
+		url "https://maven.vaadin.com/vaadin-addons"
+	}
 
 	flatDir {
 		dirs 'ext-lib'
@@ -28,9 +29,6 @@ configurations {
 		extendsFrom developmentOnly
 	}
 }
-
-//Handle log4j2 vulnerability
-ext['log4j2.version'] = '2.17.0'
 
 dependencies {
 	implementation('com.vaadin:vaadin-spring-boot-starter') {
@@ -50,6 +48,10 @@ dependencies {
 	implementation 'mysql:mysql-connector-java:8.0.25'
 	implementation platform('software.amazon.awssdk:bom:2.17.61')
 	implementation 'software.amazon.awssdk:route53'
+
+	//Vaadin component taken from https://vaadin.com/directory/component/tooltips4vaadin/overview
+	implementation 'dev.mett.vaadin:tooltip:2.3.0'
+
 	//implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
