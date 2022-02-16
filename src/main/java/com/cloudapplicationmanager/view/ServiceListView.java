@@ -3,16 +3,14 @@ package com.cloudapplicationmanager.view;
 import com.cloudapplicationmanager.model.Service;
 import com.cloudapplicationmanager.repository.ServiceRepository;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.selection.SingleSelect;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import org.claspina.confirmdialog.ButtonOption;
@@ -20,8 +18,6 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
 
 @Route(value = "services", layout = MainView.class)
 @PageTitle("Services")
@@ -33,7 +29,6 @@ public class ServiceListView extends VerticalLayout {
     private ServiceRepository serviceRepository;
 
     Grid<Service> grid = new Grid<>(Service.class);
-    TextField filterText = new TextField();
 
     public ServiceListView(@Autowired ServiceRepository serviceRepository) {
         this.serviceRepository = serviceRepository;
@@ -42,14 +37,11 @@ public class ServiceListView extends VerticalLayout {
         configureGrid();
         populateGrid();
 
-        Button addServiceButton = new Button("Add New Service");
-        addServiceButton.getStyle().set("margin-left", "auto");
+        Button addServiceButton = new Button("Add Service", new Icon(VaadinIcon.PLUS));
 
         addServiceButton.addClickListener(click -> getUI().ifPresent(ui -> ui.navigate("service/0")));
 
         add(addServiceButton, configureGridLayout());
-
-        //createServiceList();
     }
 
     private void populateGrid() {

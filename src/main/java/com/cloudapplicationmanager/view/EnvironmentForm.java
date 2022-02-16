@@ -41,7 +41,7 @@ public class EnvironmentForm extends FormLayout {
     TextField description = new TextField("Description");
     TextField subdomain = new TextField("Subdomain");
     TextField urlPath = new TextField("URL Path");
-    Select<Domain> domain = new Select<>();
+    Select<Domain> domainSelect = new Select<>();
     Checkbox healthCheckActive = new Checkbox("Health check active");
 
     //Other elements that I'll need
@@ -104,11 +104,10 @@ public class EnvironmentForm extends FormLayout {
     public void configureForm() {
 
         //Set up the domain selector
-        domain.setLabel("Domain");
-        domain.setPlaceholder("Choose one");
-        domain.setItemLabelGenerator(Domain::getName);
-        domain.setItems(domainRepository.findAll());
-        domain.setValue(domainRepository.findById(1l).get());
+        domainSelect.setLabel("Domain");
+        domainSelect.setPlaceholder("Choose one");
+        domainSelect.setItemLabelGenerator(Domain::getName);
+        domainSelect.setItems(domainRepository.findAll());
 
         //Set up bindings --
         binder.bindInstanceFields(this);
@@ -131,7 +130,7 @@ public class EnvironmentForm extends FormLayout {
         this.setColspan(buttons, 2);
 
         //Add all the components
-        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domain, buttons);
+        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domainSelect, buttons);
     }
 
     private HorizontalLayout createButtons() {
@@ -182,7 +181,12 @@ public class EnvironmentForm extends FormLayout {
                         //Update the calling page
                         fireEvent(new EnvironmentUpdateEvent(this, false));
                     }, ButtonOption.focus(), ButtonOption.caption("YES"))
-                    .withCancelButton(ButtonOption.caption("NO"))
+                    .withCancelButton(() -> { //Keep the dialog open
+                        if (environment != null && environment.getId() != null) {
+                            populateEnvironment(environment.getId());
+                        }
+                        dialog.open();
+                    }, ButtonOption.caption("NO"))
                     .open();
 
             //Update the calling page with the new list
@@ -226,6 +230,15 @@ public class EnvironmentForm extends FormLayout {
                 //TODO This error would be unexpected, but should be handled in a user-friendly way
                 logger.error("Could not find environment with id [{}]", environmentId);
             }
+        }
+
+        //Configure the correct domain value for the select
+        //If we're not creating a new environment then set the right domain value
+        if (environment != null && environment.getId() != null && environment.getId() != 0) {
+            logger.debug("Domain for environment [{}] is [{}]", environment.getName(), environment.getDomain().getName());
+            domainSelect.setValue(environment.getDomain());
+        } else {
+            logger.debug("Environment was null or environment id was 0, not setting a domain value");
         }
 
         //Set this environment into the binder so it gets the right values

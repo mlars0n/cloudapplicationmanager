@@ -5,14 +5,15 @@ import com.cloudapplicationmanager.model.Service;
 import com.cloudapplicationmanager.repository.DomainRepository;
 import com.cloudapplicationmanager.repository.EnvironmentRepository;
 import com.cloudapplicationmanager.repository.ServiceRepository;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.UI;
+import com.cloudapplicationmanager.service.EnvironmentHealthCheckService;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -52,6 +53,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     private final ServiceRepository serviceRepository;
     private final EnvironmentRepository environmentRepository;
     private final DomainRepository domainRepository;
+    private final EnvironmentHealthCheckService environmentHealthCheckService;
     private boolean isNew = false;
 
     //Environment grid
@@ -61,12 +63,12 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     //private EnvironmentForm environmentForm;
 
     public ServiceView(@Autowired ServiceRepository serviceRepository, @Autowired EnvironmentRepository environmentRepository,
-                       @Autowired DomainRepository domainRepository) {
+                       @Autowired DomainRepository domainRepository, @Autowired EnvironmentHealthCheckService environmentHealthCheckService) {
     //,                       @Autowired EnvironmentForm environmentForm) {
         this.serviceRepository = serviceRepository;
         this.environmentRepository = environmentRepository;
         this.domainRepository = domainRepository;
-        //this.environmentForm = environmentForm;
+        this.environmentHealthCheckService = environmentHealthCheckService;
     }
 
     /**
@@ -151,7 +153,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     }
 
     private String getFullyQualifiedUrl(Environment environment) {
-        return environment.getService().getHealthCheckScheme() + "://" + environment.getSubDomain() + "." + environment.getDomain().getName();
+        return environment.getService().getHealthCheckScheme() + "://" + environment.getSubDomain() + "." + environment.getDomain().getName() + "/" + environment;
     }
 
     VerticalLayout createEnvironmentLayout() {
@@ -164,7 +166,8 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
         //Create the grid columns
         environmentGrid.addColumn(Environment::getName).setHeader("Name").setSortable(true);
-        environmentGrid.addColumn(environment -> getFullyQualifiedUrl(environment)).setHeader("Fully qualified URL");
+        environmentGrid.addColumn(environment -> environmentHealthCheckService.getHealthCheckUrl(environment)).setHeader("Fully qualified health check URL (generated)");
+        environmentGrid.addComponentColumn(environment -> getHealthCheckActiveIcon(environment)).setHeader("Health check enabled?");
 
         //environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
         environmentGrid.getColumns().forEach(col -> col.setAutoWidth(true));
@@ -273,6 +276,24 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
     Registration addChangeListener(ComponentEventListener<EnvironmentForm.EnvironmentUpdateEvent> listener) {
         return getEventBus().addListener(EnvironmentForm.EnvironmentUpdateEvent.class, listener);
+    }
+
+    private HorizontalLayout getHealthCheckActiveIcon(Environment environment) {
+        HorizontalLayout healthCheckActiveLayout = new HorizontalLayout();
+        healthCheckActiveLayout.setAlignItems(Alignment.CENTER);
+        Icon icon;
+        //Paragraph text;
+        if (environment.isHealthCheckActive()) {
+            icon = new Icon(VaadinIcon.CHECK_CIRCLE);
+            icon.setColor("green");
+        } else {
+            icon = new Icon(VaadinIcon.CLOSE_CIRCLE);
+            icon.setColor("red");
+        }
+
+        healthCheckActiveLayout.add(icon);
+
+        return healthCheckActiveLayout;
     }
 }
 

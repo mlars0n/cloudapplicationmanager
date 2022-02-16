@@ -27,7 +27,8 @@ public class Environment {
 
     private boolean healthCheckActive;
 
-    @ManyToOne
+    //Always grab the domain, we are always going to want that for an environment
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "domainId")
     //@JsonBackReference(value="domain")  //Required to avoid an infinite recursion serialization scenario
     private Domain domain;
