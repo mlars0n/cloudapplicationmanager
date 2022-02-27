@@ -14,6 +14,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -110,10 +112,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Need to move the buttons to their own line
         HtmlComponent br = new HtmlComponent("br");
 
-        H3 elementsHeader = new H3("Environments");
+        H3 serviceHeader= new H3("Service");
+        H3 environmentsHeader = new H3("Environments");
 
         formLayout.add(name, description, healthCheckScheme, healthCheckPort, healthCheckPath);
-        add(formLayout, br, createButtons(binder), br, elementsHeader, createEnvironmentLayout());
+        add(serviceHeader, formLayout, br, createButtons(binder), br, environmentsHeader, createEnvironmentLayout());
 
         this.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, e -> logger.debug("Environment save event fired"));
 
@@ -152,10 +155,6 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         this.populateServiceData();
     }
 
-    private String getFullyQualifiedUrl(Environment environment) {
-        return environment.getService().getHealthCheckScheme() + "://" + environment.getSubDomain() + "." + environment.getDomain().getName() + "/" + environment;
-    }
-
     VerticalLayout createEnvironmentLayout() {
 
         //Set up the basic layout
@@ -167,21 +166,22 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Create the grid columns
         environmentGrid.addColumn(Environment::getName).setHeader("Name").setSortable(true);
         environmentGrid.addColumn(environment -> environmentHealthCheckService.getHealthCheckUrl(environment)).setHeader("Fully qualified health check URL (generated)");
-        environmentGrid.addComponentColumn(environment -> getHealthCheckActiveIcon(environment)).setHeader("Health check enabled?");
+        environmentGrid.addComponentColumn(environment -> getHealthCheckActiveIcon(environment)).setHeader("Health check active?");
+
+        //Add the health check button and related functionality
+        environmentGrid.addComponentColumn(environment -> healthCheckButton(environment));
 
         //environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
         environmentGrid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         //environmentGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
-        //Get the environments
-        //List<Environment> environments = new ArrayList<>();
+        //Populate  the environments
         environmentGrid.setItems(service.getEnvironments());
+
+        //Set the size to take up the page
         environmentGrid.setSizeFull();
-
-        //environmentGrid.setItems(environmentRepository.findAll());
-
-        //this.setColspan(environmentGrid, 3);
+        gridAndEnvironmentFormLayout.setSizeFull();
 
         //Create the dialog and add the environment form to it
         Dialog dialog = new Dialog();
@@ -189,9 +189,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         dialog.add(environmentForm);
 
         gridAndEnvironmentFormLayout.add(environmentGrid);
-        /*gridAndEnvironmentFormLayout.setFlexGrow(2, environmentGrid);
-        gridAndEnvironmentFormLayout.setFlexGrow(1, environmentForm);*/
-        gridAndEnvironmentFormLayout.setSizeFull();
+
 
         //Add the event listener that fires when an environment is saved
         environmentForm.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, this::refreshEnvironmentList);
@@ -231,11 +229,32 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         return environmentVerticalLayout;
     }
 
+    private Button healthCheckButton(Environment environment) {
+        Button healthCheckButton = new Button("Check Health Now", VaadinIcon.CHECK_SQUARE_O.create());
+        healthCheckButton.addClickListener(event -> {
+            boolean environmentHealthy = environmentHealthCheckService.checkHealth(environment);
+
+            //Configure the button notification
+            int duration = 3000;
+            Notification.Position position = Notification.Position.BOTTOM_CENTER;
+
+            if (environmentHealthy) {
+                Notification notification = Notification.show("Environment is healthy", duration, position);
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } else {
+                Notification notification = Notification.show("Environment is not healthy", duration, position);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+
+        return healthCheckButton;
+    }
+
     private HorizontalLayout createButtons(Binder binder) {
 
         //Buttons
-        Button save = new Button("Save");
-        Button cancel = new Button("Cancel");
+        Button save = new Button("Save", VaadinIcon.DISC.create());
+        Button backButton = new Button("Back", VaadinIcon.ENTER_ARROW.create());
         save.addClickListener(event -> {
             try {
 
@@ -248,7 +267,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
                 serviceRepository.save(service);
 
                 //Send the user back to the services list page
-                UI.getCurrent().navigate("services");
+                //UI.getCurrent().navigate("services");
+
+                //Stay on this page but notify the user that the save operation worked
+                Notification notification = Notification.show("Saved", 3000, Notification.Position.BOTTOM_CENTER);
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
             } catch (ValidationException e) {
 
@@ -257,7 +280,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
             }
         });
 
-        cancel.addClickListener(event -> {
+        backButton.addClickListener(event -> {
             binder.readBean(null);
 
             //Send the user back to the services list page
@@ -266,10 +289,10 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         });
 
         HorizontalLayout actions = new HorizontalLayout();
-        actions.add(save, cancel);
+        actions.add(save, backButton);
         save.getStyle().set("marginRight", "10px");
         save.getStyle().set("marginTop", "15px");
-        cancel.getStyle().set("marginTop", "15px");
+        backButton.getStyle().set("marginTop", "15px");
 
         return actions;
     }
@@ -285,10 +308,9 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Paragraph text;
         if (environment.isHealthCheckActive()) {
             icon = new Icon(VaadinIcon.CHECK_CIRCLE);
-            icon.setColor("green");
+            icon.setColor("blue");
         } else {
             icon = new Icon(VaadinIcon.CLOSE_CIRCLE);
-            icon.setColor("red");
         }
 
         healthCheckActiveLayout.add(icon);

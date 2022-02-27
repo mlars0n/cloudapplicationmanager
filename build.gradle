@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id 'com.vaadin' version '0.14.5.1'
+	id 'com.vaadin' version '0.14.8.1'
 }
 
 defaultTasks("clean", "build")
@@ -44,7 +44,7 @@ dependencies {
 	implementation fileTree(dir: 'ext-lib', include: '*.jar')
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.liquibase:liquibase-core:4.6.1'
+	implementation 'org.liquibase:liquibase-core:4.7.1'
 	implementation 'mysql:mysql-connector-java:8.0.25'
 	implementation platform('software.amazon.awssdk:bom:2.17.61')
 	implementation 'software.amazon.awssdk:route53'

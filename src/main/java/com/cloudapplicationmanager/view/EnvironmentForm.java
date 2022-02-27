@@ -41,7 +41,7 @@ public class EnvironmentForm extends FormLayout {
     TextField description = new TextField("Description");
     TextField subdomain = new TextField("Subdomain");
     TextField urlPath = new TextField("URL Path");
-    Select<Domain> domainSelect = new Select<>();
+    Select<Domain> domain = new Select<>();
     Checkbox healthCheckActive = new Checkbox("Health check active");
 
     //Other elements that I'll need
@@ -104,10 +104,10 @@ public class EnvironmentForm extends FormLayout {
     public void configureForm() {
 
         //Set up the domain selector
-        domainSelect.setLabel("Domain");
-        domainSelect.setPlaceholder("Choose one");
-        domainSelect.setItemLabelGenerator(Domain::getName);
-        domainSelect.setItems(domainRepository.findAll());
+        domain.setLabel("Domain");
+        domain.setPlaceholder("Choose one");
+        domain.setItemLabelGenerator(Domain::getName);
+        domain.setItems(domainRepository.findAll());
 
         //Set up bindings --
         binder.bindInstanceFields(this);
@@ -130,7 +130,7 @@ public class EnvironmentForm extends FormLayout {
         this.setColspan(buttons, 2);
 
         //Add all the components
-        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domainSelect, buttons);
+        this.add(formTitle, name, description, subdomain, urlPath, healthCheckActive, domain, buttons);
     }
 
     private HorizontalLayout createButtons() {
@@ -236,7 +236,7 @@ public class EnvironmentForm extends FormLayout {
         //If we're not creating a new environment then set the right domain value
         if (environment != null && environment.getId() != null && environment.getId() != 0) {
             logger.debug("Domain for environment [{}] is [{}]", environment.getName(), environment.getDomain().getName());
-            domainSelect.setValue(environment.getDomain());
+            domain.setValue(environment.getDomain());
         } else {
             logger.debug("Environment was null or environment id was 0, not setting a domain value");
         }

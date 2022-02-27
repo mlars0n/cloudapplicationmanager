@@ -3,6 +3,7 @@ package com.cloudapplicationmanager.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "Environment")
@@ -31,6 +32,7 @@ public class Environment {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "domainId")
     //@JsonBackReference(value="domain")  //Required to avoid an infinite recursion serialization scenario
+    @NotNull(message = "Please select an environment")
     private Domain domain;
 
     @ManyToOne
