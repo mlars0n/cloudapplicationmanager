@@ -1,8 +1,6 @@
 package com.cloudapplicationmanager.service;
 
-import com.cloudapplicationmanager.exception.HealthCheckException;
 import com.cloudapplicationmanager.model.Environment;
-import com.cloudapplicationmanager.view.ServiceView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,10 +42,8 @@ public class EnvironmentHealthCheckService {
                     .build().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-                logger.debug("Health check worked");
                 healthy = true;
             } else {
-                logger.debug("Health check failed");
                 healthy = false;
             }
 

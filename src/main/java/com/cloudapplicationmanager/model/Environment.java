@@ -4,6 +4,7 @@ package com.cloudapplicationmanager.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Entity
 @Table(name = "Environment")
@@ -26,7 +27,14 @@ public class Environment {
     @Column(length = 500)
     private String urlPath;
 
+    //Whether to do the automatic health check
     private boolean healthCheckActive;
+
+    //When you last ran the health check
+    private Date lastHealthCheck;
+
+    //Whether this environment is currently healthy
+    private boolean isHealthy;
 
     //Always grab the domain, we are always going to want that for an environment
     @ManyToOne(fetch = FetchType.EAGER)
@@ -87,6 +95,22 @@ public class Environment {
 
     public void setHealthCheckActive(boolean healthCheckActive) {
         this.healthCheckActive = healthCheckActive;
+    }
+
+    public Date getLastHealthCheck() {
+        return lastHealthCheck;
+    }
+
+    public void setLastHealthCheck(Date lastHealthCheck) {
+        this.lastHealthCheck = lastHealthCheck;
+    }
+
+    public boolean getIsHealthy() {
+        return isHealthy;
+    }
+
+    public void setIsHealthy(boolean healthy) {
+        isHealthy = healthy;
     }
 
     public Domain getDomain() {

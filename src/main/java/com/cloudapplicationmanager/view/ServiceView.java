@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-@Route(value = "service", layout = MainView.class)
+@Route(value = "service", layout = ParentLayoutView.class)
 @PageTitle("Service")
 public class ServiceView extends VerticalLayout implements HasUrlParameter<Long> {
 
@@ -157,6 +157,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
     VerticalLayout createEnvironmentLayout() {
 
+        //Create the dialog and add the environment form to it
+        Dialog dialog = new Dialog();
+        EnvironmentForm environmentForm = new EnvironmentForm(environmentRepository, domainRepository, service, this, dialog);
+        dialog.add(environmentForm);
+
         //Set up the basic layout
         VerticalLayout environmentVerticalLayout = new VerticalLayout();
 
@@ -168,8 +173,25 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         environmentGrid.addColumn(environment -> environmentHealthCheckService.getHealthCheckUrl(environment)).setHeader("Fully qualified health check URL (generated)");
         environmentGrid.addComponentColumn(environment -> getHealthCheckActiveIcon(environment)).setHeader("Health check active?");
 
-        //Add the health check button and related functionality
-        environmentGrid.addComponentColumn(environment -> healthCheckButton(environment));
+        //Add more health check info
+        environmentGrid.addComponentColumn(environment -> getIsHealthyIcon(environment)).setHeader("Healthy?").setSortable(true);
+
+        environmentGrid.addColumn(Environment::getLastHealthCheck).setHeader("Last checked").setSortable(true);
+
+        //Add the edit button
+        environmentGrid.addComponentColumn(environment -> {
+            Button editRowButton = VaadinConstants.editButton();
+            editRowButton.addClickListener(event -> {
+                //This has to be checked for null
+                if (event != null) {
+                    environmentForm.populateEnvironment(environment.getId());
+                }
+
+                dialog.open();
+            });
+
+            return editRowButton;
+        }).setHeader("Edit");
 
         //environmentGrid.setColumns("name", "description", "subDomain", "urlPath", "healthCheckActive");
         environmentGrid.getColumns().forEach(col -> col.setAutoWidth(true));
@@ -183,13 +205,10 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         environmentGrid.setSizeFull();
         gridAndEnvironmentFormLayout.setSizeFull();
 
-        //Create the dialog and add the environment form to it
-        Dialog dialog = new Dialog();
-        EnvironmentForm environmentForm = new EnvironmentForm(environmentRepository, domainRepository, service, this, dialog);
-        dialog.add(environmentForm);
+        //Make sure you can't click on a row
+        environmentGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
         gridAndEnvironmentFormLayout.add(environmentGrid);
-
 
         //Add the event listener that fires when an environment is saved
         environmentForm.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, this::refreshEnvironmentList);
@@ -201,20 +220,6 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
             //Set the environment ID to 0 for a new environment
             environmentForm.populateEnvironment(0);
             dialog.open();
-        });
-
-        //What happens when you click on a row
-        environmentGrid.asSingleSelect().addValueChangeListener(event -> {
-
-            //This has to be checked for null
-            if (event != null && event.getValue() != null) {
-                logger.debug("Row clicked for environment [{}]", event.getValue().getName());
-
-                environmentForm.populateEnvironment(event.getValue().getId());
-            }
-
-            dialog.open();
-
         });
 
         //Set the high level grid properties
@@ -229,6 +234,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         return environmentVerticalLayout;
     }
 
+    /**
+     * Manual health check button
+     * @param environment
+     * @return
+     */
     private Button healthCheckButton(Environment environment) {
         Button healthCheckButton = new Button("Check Health Now", VaadinIcon.CHECK_SQUARE_O.create());
         healthCheckButton.addClickListener(event -> {
@@ -308,7 +318,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Paragraph text;
         if (environment.isHealthCheckActive()) {
             icon = new Icon(VaadinIcon.CHECK_CIRCLE);
-            icon.setColor("blue");
+            icon.setColor("black");
         } else {
             icon = new Icon(VaadinIcon.CLOSE_CIRCLE);
         }
@@ -316,6 +326,24 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         healthCheckActiveLayout.add(icon);
 
         return healthCheckActiveLayout;
+    }
+
+    private HorizontalLayout getIsHealthyIcon(Environment environment) {
+        HorizontalLayout isHealthyLayout = new HorizontalLayout();
+        isHealthyLayout.setAlignItems(Alignment.CENTER);
+        Icon icon;
+        //Paragraph text;
+        if (environment.getIsHealthy()) {
+            icon = new Icon(VaadinIcon.CHECK_CIRCLE);
+            icon.setColor("green");
+        } else {
+            icon = new Icon(VaadinIcon.CLOSE_CIRCLE);
+            icon.setColor("red");
+        }
+
+        isHealthyLayout.add(icon);
+
+        return isHealthyLayout;
     }
 }
 

@@ -4,14 +4,13 @@ import com.cloudapplicationmanager.model.Environment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Route(value = "testview", layout = MainView.class)
+@Route(value = "testview", layout = ParentLayoutView.class)
 @PageTitle("TestView")
 public class TestView extends FormLayout {
 

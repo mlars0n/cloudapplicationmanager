@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 //Tooltip import comes from https://vaadin.com/directory/component/tooltips4vaadin/samples
 import dev.mett.vaadin.tooltip.Tooltips;
 
-@Route(value = "domains", layout = MainView.class)
+@Route(value = "domains", layout = ParentLayoutView.class)
 @PageTitle("Domains")
 public class DomainListView extends VerticalLayout {
 
@@ -184,7 +184,7 @@ public class DomainListView extends VerticalLayout {
 
         //Add the edit column and functionality to pop up the domain editor when clicked
         domainGrid.addComponentColumn(localDomain -> {
-            Button editRowButton = new Button(new Icon(VaadinIcon.ELLIPSIS_DOTS_V));
+            Button editRowButton = VaadinConstants.editButton();
 
             editRowButton.addClickListener(event -> {
 

@@ -8,35 +8,35 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.InitialPageSettings;
+import com.vaadin.flow.server.PageConfigurator;
 
 /**
- * Establish the top menu
+ * Establish the layout menu
  */
-@Route("app")
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
-public class MainView extends AppLayout {
+public class ParentLayoutView extends AppLayout implements PageConfigurator {
 
-    public MainView() {
+    public ParentLayoutView() {
         //Whether the navbar or drawer is primary
         setPrimarySection(AppLayout.Section.NAVBAR);
 
-        //Text
-        //Text appName = new Text("Cloud Application Manager");
-
-        /*Image img = new Image("https://i.imgur.com/GPpnszs.png", "Vaadin Logo");
-        img.setHeight("44px");*/
-
-
         addToNavbar(new DrawerToggle(), new Span("Cloud Application Manager"));
 
-        Tab homeTab = new Tab(new RouterLink("Home", MainView.class));
+        Tab homeTab = new Tab(new RouterLink("Home", HomeView.class));
         Tab servicesTab = new Tab(new RouterLink("Services", ServiceListView.class));
         Tab domainsTab = new Tab(new RouterLink("Domains", DomainListView.class));
         Tabs tabs = new Tabs(homeTab, servicesTab, domainsTab);
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         addToDrawer(tabs);
 
+    }
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addFavIcon("icon", "favicon.png", "192x192");
+        settings.addLink("shortcut icon", "favicon.png");
     }
 
 }

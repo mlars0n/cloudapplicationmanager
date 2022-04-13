@@ -44,6 +44,7 @@ dependencies {
 	implementation fileTree(dir: 'ext-lib', include: '*.jar')
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-quartz'
 	implementation 'org.liquibase:liquibase-core:4.7.1'
 	implementation 'mysql:mysql-connector-java:8.0.25'
 	implementation platform('software.amazon.awssdk:bom:2.17.61')

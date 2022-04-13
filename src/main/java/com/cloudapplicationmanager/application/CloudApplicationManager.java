@@ -68,6 +68,32 @@ public class CloudApplicationManager {
 			}).forEach((keyName) -> System.setProperty(keyName, props.getProperty(keyName)));
 		}
 
+		String errorMsgSolutionText = "Make sure to set it as an environment variable (if running in a container), system variable, or in " +
+				"a configuration file using the system property \"-Dconfig.file\".";
+
+		//Check to make sure you got the correct environment variables
+		if (System.getProperty(DB_USERNAME_ENV_VAR_NAME) == null && System.getenv(DB_USERNAME_ENV_VAR_NAME) == null) {
+			logger.error("Error: missing DB username property [{}]. Exiting." + errorMsgSolutionText, DB_USERNAME_ENV_VAR_NAME);
+			System.exit(1);
+		}
+
+		if (System.getProperty(DB_PASSWORD_ENV_VAR_NAME) == null && System.getenv(DB_PASSWORD_ENV_VAR_NAME) == null) {
+			logger.error("Error: missing DB password property [{}]. Exiting." + errorMsgSolutionText, DB_PASSWORD_ENV_VAR_NAME);
+			System.exit(1);
+		}
+
+		if (System.getProperty(DB_DRIVER_CLASS_NAME) == null && System.getenv(DB_DRIVER_CLASS_NAME) == null) {
+			logger.error("Error: missing Google client ID property [{}]. Exiting." + errorMsgSolutionText, DB_DRIVER_CLASS_NAME);
+			System.exit(1);
+		}
+
+		if (System.getProperty(DB_URL) == null && System.getenv(DB_URL) == null) {
+			logger.error("Error: missing Google client secret property [{}]. Exiting." + errorMsgSolutionText, DB_URL);
+			System.exit(1);
+		}
+
+
+
 		SpringApplication.run(CloudApplicationManager.class, args);
 	}
 
