@@ -62,9 +62,7 @@ public class CloudApplicationManager {
 					DB_USERNAME_ENV_VAR_NAME,
 					DB_PASSWORD_ENV_VAR_NAME,
 					DB_DRIVER_CLASS_NAME,
-					DB_URL,
-					AWS_ACCESS_KEY_ID_ENV_VAR_NAME,
-					AWS_SECRET_KEY_ENV_NAME
+					DB_URL
 			}).forEach((keyName) -> System.setProperty(keyName, props.getProperty(keyName)));
 		}
 
