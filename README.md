@@ -8,6 +8,14 @@ Building this application requires Gradle, which can be bootstrapped by the appl
 
 JDK 11+ required to build. Make sure this is set up and available on the command line.
 
+Configuration: To configure the file, you can either set environment variables (as you would in a container environment),
+or you can set a properties file Java system paramater:
+* config.file
+
+You can set that to point to the full path of your properties file as in the examples below.
+
+This also works in a container environment if you use "--env-file" to set the environment variables.
+
 Commands:
 
 * Build: ./gradlew
