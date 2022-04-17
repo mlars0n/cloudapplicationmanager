@@ -34,4 +34,5 @@ jobs:
         key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}
     - name: Build with Gradle
       run: ./gradlew clean build '-Pvaadin.productionMode' --stacktrace --info --no-daemon
-
+    - name: Build the Docker image      
+      run: docker build . --file Dockerfile --tag cloudapplicationmanager:$(date +%s)
