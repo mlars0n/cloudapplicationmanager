@@ -42,13 +42,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        file: ./Dockerfile
-        pull: true
-        push: true
-        cache-from: type=registry,ref=mlars0n/cloudapplicationmanager:latest
-        cache-to: type=inline
-        tags: cloudapplicationmanager:latest        
+    #- name: Build and push
+    #  uses: docker/build-push-action@v2
+    #  with:
+    #    context: .
+    #    file: ./Dockerfile
+    #    pull: true
+    #    push: true
+    #    cache-from: type=registry,ref=mlars0n/cloudapplicationmanager:latest
+    #    cache-to: type=inline
+    #    tags: cloudapplicationmanager:latest
