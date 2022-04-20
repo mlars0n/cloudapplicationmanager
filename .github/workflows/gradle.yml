@@ -14,10 +14,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
+
     - name: Cache Gradle packages
       uses: actions/cache@v2
       with:
@@ -25,6 +27,7 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties', 'gradle.properties') }}
+
     - name: Cache pnpm packages
       uses: actions/cache@v2
       with:
@@ -39,11 +42,11 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag cloudapplicationmanager:$(date +%s)
 
-    #- name: Login to DockerHub
-    #  uses: docker/login-action@v1
-    #  with:
-    #      username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #      password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     #- name: Build and push
     #  uses: docker/build-push-action@v2
