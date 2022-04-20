@@ -34,5 +34,22 @@ jobs:
         key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}
     - name: Build with Gradle
       run: ./gradlew clean build '-Pvaadin.productionMode' --stacktrace --info --no-daemon
-    - name: Build the Docker image      
-      run: docker build . --file Dockerfile --tag cloudapplicationmanager:$(date +%s)
+#    - name: Build the Docker image      
+#      run: docker build . --file Dockerfile --tag cloudapplicationmanager:$(date +%s)
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        pull: true
+        push: true
+        cache-from: type=registry,ref=mlars0n/cloudapplicationmanager-docker-action:latest
+        cache-to: type=inline
+        tags: mlars0n/cloudapplicationmanager-docker-action:latest
+        #build-args: PROFILE=nectar,ARG2=test
