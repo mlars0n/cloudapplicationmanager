@@ -53,8 +53,8 @@ jobs:
       with:
         context: .
         #file: ./Dockerfile
-        pull: true
+        #pull: true
         push: true
-        cache-from: type=registry,ref=mlars0n/cloudapplicationmanager:latest
-        cache-to: type=inline
+        #cache-from: type=registry,ref=mlars0n/cloudapplicationmanager:latest
+        #cache-to: type=inline
         tags: cloudapplicationmanager:latest
