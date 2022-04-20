@@ -40,7 +40,7 @@ jobs:
       run: ./gradlew clean build '-Pvaadin.productionMode' --stacktrace --info --no-daemon
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag cloudapplicationmanager:$(date +%s)
+      run: docker build . --file Dockerfile --tag mlarson582/cloudapplicationmanager:latest
 
     - name: Login to DockerHub
       uses: docker/login-action@v1
@@ -57,4 +57,4 @@ jobs:
         push: true
         #cache-from: type=registry,ref=mlars0n/cloudapplicationmanager:latest
         #cache-to: type=inline
-        tags: cloudapplicationmanager:latest
+        tags: mlarson582/cloudapplicationmanager:latest
