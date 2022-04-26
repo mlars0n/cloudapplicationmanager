@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.route53.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
 public class AwsRoute53Service {
 
     private static Logger logger = LoggerFactory.getLogger(AwsRoute53Service.class);
