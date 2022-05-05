@@ -40,7 +40,7 @@ jobs:
       run: ./gradlew clean build '-Pvaadin.productionMode' --stacktrace --info --no-daemon
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag mlars0n/cloudapplicationmanager:latest
+      run: docker build . --file Dockerfile --tag mlars0n/cloudapplicationmanager
 
     - name: Login to DockerHub
       uses: docker/login-action@v1

@@ -1,5 +1,5 @@
 HELP.md
-cloudapplicationmanager.properties
+cloudappmanager.properties
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

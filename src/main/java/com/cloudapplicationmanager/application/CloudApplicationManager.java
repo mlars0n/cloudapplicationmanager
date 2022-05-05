@@ -61,7 +61,6 @@ public class CloudApplicationManager {
 			Arrays.stream(new String[] {
 					DB_USERNAME_ENV_VAR_NAME,
 					DB_PASSWORD_ENV_VAR_NAME,
-					DB_DRIVER_CLASS_NAME,
 					DB_URL
 			}).forEach((keyName) -> System.setProperty(keyName, props.getProperty(keyName)));
 		}
@@ -77,11 +76,6 @@ public class CloudApplicationManager {
 
 		if (System.getProperty(DB_PASSWORD_ENV_VAR_NAME) == null && System.getenv(DB_PASSWORD_ENV_VAR_NAME) == null) {
 			logger.error("Error: missing DB password property [{}]. Exiting." + errorMsgSolutionText, DB_PASSWORD_ENV_VAR_NAME);
-			System.exit(1);
-		}
-
-		if (System.getProperty(DB_DRIVER_CLASS_NAME) == null && System.getenv(DB_DRIVER_CLASS_NAME) == null) {
-			logger.error("Error: missing Google client ID property [{}]. Exiting." + errorMsgSolutionText, DB_DRIVER_CLASS_NAME);
 			System.exit(1);
 		}
 
