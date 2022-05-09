@@ -212,8 +212,10 @@ public class DomainListView extends VerticalLayout {
             });
 
             return editRowButton;
-        });
+        }).setHeader("Edit");
 
+        //Remove the functionality to click on rows
+        domainGrid.setSelectionMode(Grid.SelectionMode.NONE);
         domainGrid.addClassNames("contact-grid");
         domainGrid.setSizeFull();
         setSizeFull();

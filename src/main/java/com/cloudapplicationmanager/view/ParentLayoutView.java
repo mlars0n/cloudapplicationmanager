@@ -23,11 +23,9 @@ public class ParentLayoutView extends AppLayout implements PageConfigurator {
         setPrimarySection(AppLayout.Section.NAVBAR);
 
         addToNavbar(new DrawerToggle(), new Span("Cloud Application Manager"));
-
-        Tab homeTab = new Tab(new RouterLink("Home", HomeView.class));
         Tab servicesTab = new Tab(new RouterLink("Services", ServiceListView.class));
         Tab domainsTab = new Tab(new RouterLink("Domains", DomainListView.class));
-        Tabs tabs = new Tabs(homeTab, servicesTab, domainsTab);
+        Tabs tabs = new Tabs(servicesTab, domainsTab);
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         addToDrawer(tabs);
 

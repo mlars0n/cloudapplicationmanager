@@ -13,4 +13,11 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long> 
      * @return
      */
     List<Environment> findEnvironmentByHealthCheckActiveIsTrue();
+
+    //Count healthy environments where the health check is inactive (or not but generally the health check active should be true)
+    long countByServiceAndIsHealthyAndHealthCheckActive(Service service, boolean isHealthy, boolean healthCheckActive);
+
+    long countByService(Service service);
+
+    long countByServiceAndHealthCheckActive(Service service, boolean healthCheckActive);
 }

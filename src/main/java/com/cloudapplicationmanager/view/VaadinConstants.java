@@ -9,7 +9,19 @@ import com.vaadin.flow.component.icon.VaadinIcon;
  */
 public class VaadinConstants {
 
+    public static Button saveButton() {
+        return new Button("Save", new Icon(VaadinIcon.DISC));
+    }
+
     public static Button editButton() {
         return new Button(new Icon(VaadinIcon.ELLIPSIS_DOTS_V));
+    }
+
+    public static Button deleteButton() {
+        return new Button(new Icon(VaadinIcon.TRASH));
+    }
+
+    public static Button backButton() {
+        return new Button("Back", new Icon(VaadinIcon.ENTER_ARROW));
     }
 }

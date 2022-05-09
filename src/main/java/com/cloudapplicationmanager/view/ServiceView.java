@@ -16,6 +16,8 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -23,11 +25,10 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.shared.Registration;
+import org.claspina.confirmdialog.ButtonOption;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     private final TextField description = new TextField("Description");
     private final TextField healthCheckScheme = new TextField("Health Check Scheme");
     private final TextField healthCheckPath= new TextField("Health Check Path");
+
+    //Create service save/back/delete buttons
+    private Button saveButton = VaadinConstants.saveButton();
+    private Button backButton = VaadinConstants.backButton();
+    private Button deleteButton = VaadinConstants.deleteButton();
 
     //Validation and form binder service
     private BeanValidationBinder<Service> binder = new BeanValidationBinder<>(Service.class);
@@ -86,6 +92,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         //Populate the service object
         populateServiceData();
 
+        //Hide the delete button if we are creating a service
+        if (serviceId != null && serviceId == 0) {
+            deleteButton.setVisible(false);
+        }
+
         //Now that we have the correct parameter, call the code that will create this page
         createPage();
     }
@@ -115,18 +126,17 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         H3 serviceHeader= new H3("Service");
         H3 environmentsHeader = new H3("Environments");
 
+        /*HorizontalLayout buttonLayout = createButtons(binder);
+        formLayout.setColspan(buttonLayout, 3);*/
+
         formLayout.add(name, description, healthCheckScheme, healthCheckPort, healthCheckPath);
-        add(serviceHeader, formLayout, br, createButtons(binder), br, environmentsHeader, createEnvironmentLayout());
+        add(serviceHeader, formLayout, createButtons(binder), environmentsHeader, createEnvironmentLayout());
 
         this.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, e -> logger.debug("Environment save event fired"));
-
-        //Registration registration = this.addChangeListener(e -> logger.debug("Environment save event fired"));
-
-        //this.addListener()
     }
 
     private void populateServiceData() {
-        //If the parameter is 0 then create a new service
+        //If the parameter is 0 then this is for adding a new service
         if (serviceId == 0) {
             service = new Service();
             isNew = true;
@@ -138,7 +148,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
                 this.service = optionalService.get();
                 logger.debug("Service name is: [{}]", service.getName());
             } else {
-                //TODO handle this error gracefully (although don't expect this, as the links
+                //TODO handle this error gracefully with a proper "404" type error (although don't expect this, as the links
                 //will be calculated properly in the app)
                 logger.error("Could not find Service with ID [{}]", serviceId);
             }
@@ -214,13 +224,15 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         environmentForm.addListener(EnvironmentForm.EnvironmentUpdateEvent.class, this::refreshEnvironmentList);
 
         //Create the "add environment" button and what to do when it is clicked
-        Button addEnvironmentButton = new Button("Add Environment");
+        Button addEnvironmentButton = new Button("Add Environment", new Icon(VaadinIcon.PLUS));
         addEnvironmentButton.addClickListener(event -> {
 
             //Set the environment ID to 0 for a new environment
             environmentForm.populateEnvironment(0);
             dialog.open();
         });
+
+        //Create the "add environment" button and what to do when it is clicked
 
         //Set the high level grid properties
         environmentGrid.addClassNames("contact-grid");
@@ -262,10 +274,8 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
     private HorizontalLayout createButtons(Binder binder) {
 
-        //Buttons
-        Button save = new Button("Save", VaadinIcon.DISC.create());
-        Button backButton = new Button("Back", VaadinIcon.ENTER_ARROW.create());
-        save.addClickListener(event -> {
+        //Add the save event
+        saveButton.addClickListener(event -> {
             try {
 
                 //Write this back to the binder object
@@ -280,7 +290,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
                 //UI.getCurrent().navigate("services");
 
                 //Stay on this page but notify the user that the save operation worked
-                Notification notification = Notification.show("Saved", 3000, Notification.Position.BOTTOM_CENTER);
+                Notification notification = Notification.show("Saved", 3000, Notification.Position.TOP_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
             } catch (ValidationException e) {
@@ -298,11 +308,33 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
 
         });
 
+        deleteButton.addClickListener(click -> {
+            logger.debug("Deleting Service with id [{}]", service.getId());
+
+            ConfirmDialog
+                    .createQuestion()
+                    .withCaption("Delete warning")
+                    .withMessage("Are you sure you want to delete service  \"" + service.getName() + "\"?")
+                    .withOkButton(() -> {
+                        //Delete the service
+                        serviceRepository.deleteById(service.getId());
+
+                        //Return to the Service List page
+                        UI.getCurrent().navigate(ServiceListView.class);
+                    }, ButtonOption.focus(), ButtonOption.caption("YES"))
+                    .withCancelButton(ButtonOption.caption("NO"))
+                    .open();
+        });
+
+        //Layout the save/back/delete buttons
         HorizontalLayout actions = new HorizontalLayout();
-        actions.add(save, backButton);
-        save.getStyle().set("marginRight", "10px");
-        save.getStyle().set("marginTop", "15px");
-        backButton.getStyle().set("marginTop", "15px");
+        actions.setWidthFull();
+
+        //Push the delete button over to the right--couldn't make this work without CSS
+        deleteButton.getStyle().set("margin-left", "auto");
+
+        //Add in the buttons but don't include the delete button if this is a new service
+        actions.add(saveButton, backButton, deleteButton);
 
         return actions;
     }
@@ -329,6 +361,7 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
     }
 
     private HorizontalLayout getIsHealthyIcon(Environment environment) {
+
         HorizontalLayout isHealthyLayout = new HorizontalLayout();
         isHealthyLayout.setAlignItems(Alignment.CENTER);
         Icon icon;
@@ -342,6 +375,11 @@ public class ServiceView extends VerticalLayout implements HasUrlParameter<Long>
         }
 
         isHealthyLayout.add(icon);
+
+        //If this isn't being checked don't display any icon
+        if (!environment.isHealthCheckActive()) {
+            isHealthyLayout.setVisible(false);
+        }
 
         return isHealthyLayout;
     }

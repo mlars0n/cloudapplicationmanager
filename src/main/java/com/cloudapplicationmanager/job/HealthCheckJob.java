@@ -39,7 +39,7 @@ public class HealthCheckJob implements Job {
         //But using a simple sequential approach for now to keep this moving
         List<Environment> environmentsToCheck = environmentRepository.findEnvironmentByHealthCheckActiveIsTrue();
         for (Environment environment: environmentsToCheck) {
-            logger.debug("Executing health check for environment [{}]", environment.getName());
+            //logger.debug("Executing health check for environment [{}]", environment.getName());
 
             boolean environmentIsHealthy = environmentHealthCheckService.checkHealth(environment);
             environment.setIsHealthy(environmentIsHealthy);
