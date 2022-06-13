@@ -1,0 +1,17 @@
+/*
+   CSS styling examples for the Vaadin app.
+   Visit https://vaadin.com/docs/flow/theme/theming-overview.html and
+   https://vaadin.com/themes/lumo for more information.
+*/
+
+.errors {
+  background-color: #ea9d9d;
+}
+
+.warnings {
+  background-color: #fddada;
+}
+
+.allisgood {
+  background-color: #39e363;
+}

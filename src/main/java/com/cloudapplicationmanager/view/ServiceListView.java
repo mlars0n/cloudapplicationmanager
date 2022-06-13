@@ -6,7 +6,7 @@ import com.cloudapplicationmanager.repository.ServiceRepository;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.Icon;
@@ -25,6 +25,7 @@ import java.util.Optional;
 @Route(value = "services", layout = ParentLayoutView.class)
 @RouteAlias(value = "", layout = ParentLayoutView.class)
 @PageTitle("Services")
+@CssImport(value = "./styles/vaadin-grid-styles.css", themeFor = "vaadin-grid")
 public class ServiceListView extends VerticalLayout {
 
     private static Logger logger = LoggerFactory.getLogger(ServiceListView.class);
@@ -33,7 +34,7 @@ public class ServiceListView extends VerticalLayout {
     private ServiceRepository serviceRepository;
     private EnvironmentRepository environmentRepository;
 
-    Grid<Service> grid = new Grid<>();
+    Grid<Service> serviceGrid = new Grid<>();
 
     public ServiceListView(@Autowired ServiceRepository serviceRepository, @Autowired EnvironmentRepository environmentRepository) {
         this.serviceRepository = serviceRepository;
@@ -52,11 +53,11 @@ public class ServiceListView extends VerticalLayout {
     }
 
     private void populateGrid() {
-        grid.setItems(serviceRepository.findAll());
+        serviceGrid.setItems(serviceRepository.findAll());
     }
 
     private Component configureGridLayout() {
-        HorizontalLayout content = new HorizontalLayout(grid);
+        HorizontalLayout content = new HorizontalLayout(serviceGrid);
         //content.setFlexGrow(2, grid);
         content.addClassNames("content");
         content.setSizeFull();
@@ -66,17 +67,22 @@ public class ServiceListView extends VerticalLayout {
     private void configureGrid() {
 
         //Add the columns to the grid
-        grid.addColumn(Service::getName).setHeader("Name").setSortable(true);
-        grid.addColumn(Service::getDescription).setHeader("Description").setSortable(true);
-        grid.addColumn(service -> environmentRepository.countByService(service)).setHeader("Total Environments").setSortable(true);
-        grid.addColumn(service -> environmentRepository.countByServiceAndHealthCheckActive(service, true)).setHeader("Health Check Active");
-        grid.addColumn(service -> environmentRepository.countByServiceAndIsHealthyAndHealthCheckActive(service, true, true))
-                .setHeader("Healthy (Health Check Active)");
-        grid.addColumn(service -> environmentRepository.countByServiceAndIsHealthyAndHealthCheckActive(service, false, true))
-                .setHeader("Unhealthy (Health Check Active)");
+        serviceGrid.addColumn(Service::getName).setHeader("Name").setSortable(true);
+        serviceGrid.addColumn(Service::getDescription).setHeader("Description").setSortable(true);
+        serviceGrid.addColumn(service -> environmentRepository.countByService(service)).setHeader("Total Environments").setSortable(true);
+        serviceGrid.addColumn(service -> environmentRepository.countByServiceAndHealthCheckActive(service, true)).setHeader("Health Check Active")
+                        .setKey("active");
+        serviceGrid.addColumn(service ->
+                        environmentRepository.countByServiceAndIsHealthyAndHealthCheckActive(service, true, true))
+                        .setHeader("Healthy (Health Check Active)")
+                                .setKey("healthy");
+        serviceGrid.addColumn(service ->
+                        environmentRepository.countByServiceAndIsHealthyAndHealthCheckActive(service, false, true))
+                        .setHeader("Unhealthy (Health Check Active)")
+                                .setKey("unhealthy");
 
         //Add what happens when you click on a row
-        grid.addSelectionListener(item -> {
+        serviceGrid.addSelectionListener(item -> {
 
             Optional<Service> optionalService = item.getFirstSelectedItem();
             long serviceId = 0;
@@ -91,9 +97,25 @@ public class ServiceListView extends VerticalLayout {
             UI.getCurrent().navigate(ServiceView.class, serviceId);
         });
 
+        //Set up the cell style
+        styleHealthCheckCells();
+
         //Additional grid options
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        grid.setSizeFull();
+        serviceGrid.getColumns().forEach(col -> col.setAutoWidth(true));
+        serviceGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+        serviceGrid.setSizeFull();
+    }
+
+    /**
+     * Method to handle all the cell stylings to show what is healthy and what is not
+     */
+    private void styleHealthCheckCells() {
+        serviceGrid.getColumnByKey("healthy").setClassNameGenerator(service -> {
+            long count = environmentRepository.countByServiceAndHealthCheckActive(service, true);
+            if (count > 0)
+                return "allisgood";
+            else
+                return "";
+        });
     }
 }
