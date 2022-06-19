@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.7'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id 'com.vaadin' version '0.14.8.1'
+	id 'com.vaadin' version '23.1.1'
 }
 
 defaultTasks("clean", "build")
@@ -33,17 +33,8 @@ configurations {
 }
 
 dependencies {
-	implementation('com.vaadin:vaadin-spring-boot-starter') {
-//         Webjars are only needed when running in Vaadin 13 compatibility mode
-		["com.vaadin.webjar", "org.webjars.bowergithub.insites",
-		 "org.webjars.bowergithub.polymer", "org.webjars.bowergithub.polymerelements",
-		 "org.webjars.bowergithub.vaadin", "org.webjars.bowergithub.webcomponents"]
-				.forEach { group -> exclude(group: group) }
-	}
+	implementation 'com.vaadin:vaadin-spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	//implementation 'org.springframework.boot:spring-boot-starter-hateoas'
-	//implementation 'org.claspina:confirm-dialog:2.0.0'
-	implementation fileTree(dir: 'ext-lib', include: '*.jar')
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
@@ -51,6 +42,9 @@ dependencies {
 	implementation 'mysql:mysql-connector-java:8.0.25'
 	implementation platform('software.amazon.awssdk:bom:2.17.61')
 	implementation 'software.amazon.awssdk:route53'
+
+	//Local jars
+	implementation fileTree(dir: 'ext-lib', include: '*.jar')
 
 	//Vaadin component taken from https://vaadin.com/directory/component/tooltips4vaadin/overview
 	implementation 'dev.mett.vaadin:tooltip:2.3.0'

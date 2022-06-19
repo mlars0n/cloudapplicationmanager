@@ -71,6 +71,8 @@ Building this application requires Gradle, which can be bootstrapped by the appl
 
 JDK 11+ required to build. Make sure this is set up and available on the command line.
 
+You will also need NPM installed (a recent version, 8.4+ or higher, is required).
+
 Configuration: To configure the file, you can either set environment variables (as you would in a container environment),
 or you can set a properties file Java system parameter:
 * config.file

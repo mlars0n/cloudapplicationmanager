@@ -3,6 +3,7 @@ package com.cloudapplicationmanager.view;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -14,8 +15,8 @@ import com.vaadin.flow.server.PageConfigurator;
 /**
  * Establish the layout menu
  */
-@CssImport("./styles/shared-styles.css")
-@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
+//@CssImport("./styles/shared-styles.css")
+//@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 public class ParentLayoutView extends AppLayout implements PageConfigurator {
 
     public ParentLayoutView() {
